@@ -45,24 +45,40 @@ export const Login = async(req, res) => {
         const userId = user[0].id;
         const name = user[0].name;
         const email = user[0].email;
-        const accessToken = jwt.sign({userId, name, email}, process.env.ACCESS_TOKEN_SECRET,{
-            expiresIn: '15s'
-        });
-        const refreshToken = jwt.sign({userId, name, email}, process.env.REFRESH_TOKEN_SECRET,{
-            expiresIn: '1d'
-        });
-        await Users.update({refresh_token: refreshToken},{
-            where:{
-                id: userId
-            }
-        });
+        const accessToken = jwt.sign(
+          { userId, name, email },
+          process.env.ACCESS_TOKEN_SECRET,
+          {
+            expiresIn: '1d',
+          }
+        );
+        const refreshToken = jwt.sign(
+          { userId, name, email },
+          process.env.REFRESH_TOKEN_SECRET,
+          {
+            expiresIn: '1d',
+          }
+        );
+        await Users.update(
+          { refresh_token: refreshToken },
+          {
+            where: {
+              id: userId,
+            },
+          }
+        );
         res.cookie('refreshToken', refreshToken,{
             httpOnly: true,
             maxAge: 24 * 60 * 60 * 1000
         });
-        res.json({ accessToken });
+        res.json({
+          accessToken,
+          id: userId,
+          name,
+          email,
+        });
     } catch (error) {
-        res.status(404).json({msg:"Email not found"});
+        res.status(404).json({ errorMessage: 'Email not found' });
     }
 }
  
